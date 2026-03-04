@@ -11,7 +11,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      home: const AuthPage(), // Используем экран из auth.dart
+      home: const AuthPage(), // лол)))
     );
   }
 }
