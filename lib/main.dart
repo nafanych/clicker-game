@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'auth.dart'; // Импортируем наш отдельный экран
+import 'auth.dart';
 
 void main() {
   runApp(const MyApp());
