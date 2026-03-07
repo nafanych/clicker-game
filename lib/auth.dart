@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_application_1/audio.dart';
 import 'package:flutter_application_1/storage.dart';
 import 'clicker.dart'; // импортируем новый экран
 
@@ -16,8 +17,9 @@ class _AuthPageState extends State<AuthPage> {
   void _login() {
     final username = _usernameController.text.trim();
 
+    AudioManager.playSound('sounds/click.mp3', type: AudioType.click);
     if (username.isNotEmpty) {
-      Storage.authSaveData(username, _selectedAvatar);
+      Storage.loginSetData(username, _selectedAvatar);
 
       Navigator.of(context).push(
         PageRouteBuilder(
@@ -44,20 +46,24 @@ class _AuthPageState extends State<AuthPage> {
 
     return GestureDetector(
       onTap: () {
+        AudioManager.playSound('sounds/click.mp3', type: AudioType.click);
         setState(() {
           _selectedAvatar = icon;
         });
       },
-      child: Container(
-        padding: const EdgeInsets.all(12),
-        decoration: BoxDecoration(
-          color: isSelected ? Colors.white : const Color(0xFF2A2A2A),
-          borderRadius: BorderRadius.circular(12),
-        ),
-        child: Icon(
-          icon,
-          size: 20,
-          color: isSelected ? Colors.black : Colors.white,
+      child: MouseRegion(
+        cursor: SystemMouseCursors.click,
+        child: Container(
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            color: isSelected ? Colors.white : const Color(0xFF2A2A2A),
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Icon(
+            icon,
+            size: 20,
+            color: isSelected ? Colors.black : Colors.white,
+          ),
         ),
       ),
     );
