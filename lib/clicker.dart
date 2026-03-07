@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter_application_1/audio.dart';
+import 'package:flutter_application_1/settings.dart';
 import 'storage.dart';
 import 'shop.dart';
 
@@ -182,7 +183,23 @@ class _ClickerState extends State<Clicker>
                 ),
                 child: IconButton(
                   icon: const Icon(Icons.settings, color: Colors.white),
-                  onPressed: () {},
+                  onPressed: () {
+                    AudioManager.playSound('sounds/click.mp3', type: AudioType.click);
+                    Navigator.push(
+                      context,
+                      PageRouteBuilder(
+                        transitionDuration: const Duration(milliseconds: 400),
+                        pageBuilder: (_, __, ___) => const SettingsPage(),
+                        transitionsBuilder: (_, animation, __, child) {
+                          final offset = Tween<Offset>(
+                            begin: const Offset(-1, 0),
+                            end: Offset.zero,
+                          ).animate(animation);
+                          return SlideTransition(position: offset, child: child);
+                        },
+                      ),
+                    );
+                  },
                 ),
               ),
             ),
