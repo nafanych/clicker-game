@@ -35,7 +35,7 @@ class _ClickerState extends State<Clicker>
 
   int getCurrentStep() {
     int exp = Storage.playerData["exp"];
-    return (exp ~/ 250) % 4;
+    return ((exp % 1000) ~/ 250);
   }
 
   void _updateLocation() {
@@ -149,13 +149,27 @@ class _ClickerState extends State<Clicker>
       backgroundColor: const Color(0xFF121212),
       body: Stack(
         children: [
-          // Фоновая локация
+          // location
           Positioned.fill(
-            child: Image.asset(
-              getLocationImage(),
-              fit: BoxFit.cover,
+          child: AnimatedSwitcher(
+            duration: const Duration(milliseconds: 700),
+            switchInCurve: Curves.easeOut,
+            switchOutCurve: Curves.easeIn,
+            transitionBuilder: (child, animation) {
+              return FadeTransition(
+                opacity: animation,
+                child: child,
+              );
+            },
+            child: SizedBox.expand(
+              key: ValueKey(getLocationImage()),
+              child: Image.asset(
+                getLocationImage(),
+                fit: BoxFit.cover,
+              ),
             ),
           ),
+        ),
 
           // top left
           Positioned(
