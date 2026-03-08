@@ -33,11 +33,60 @@ class _ClickerState extends State<Clicker>
     });
   }
 
+  int getCurrentStep() {
+    int exp = Storage.playerData["exp"];
+    return (exp ~/ 250) % 4;
+  }
+
+  void _updateLocation() {
+    int exp = Storage.playerData["exp"];
+
+    if (exp >= 3000) {
+      String un = Storage.playerData["username"];
+      IconData ic = Storage.playerData["avatar"];
+
+      Storage.playerData = {
+        "username": un,
+        "avatar": ic,
+        "balance": 0,
+        "location": 1,
+        "exp": 0,
+        "buffs": {
+          "clickPower": 1,
+          "doubleSpeed": false,
+        },
+        "settings": {
+          "music": true,
+          "soundClick": true,
+          "soundBuyed": true,
+        }
+      };
+    } else if (exp >= 2000) {
+      Storage.playerData["location"] = 3;
+    } else if (exp >= 1000) {
+      Storage.playerData["location"] = 2;
+    } else {
+      Storage.playerData["location"] = 1;
+    }
+
+    Storage.savePlayerData();
+  }
+
+  double _locationMultiplier() {
+    int loc = Storage.playerData["location"];
+    return 1 + (loc - 1) * 0.5;
+  }
+
+  String getLocationImage() {
+    int location = Storage.playerData["location"];
+    int step = getCurrentStep();
+    return 'assets/images/locations/loc${location}step$step.png';
+  }
+
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
-
     _startAutoClicker();
   }
 
@@ -76,10 +125,13 @@ class _ClickerState extends State<Clicker>
     setState(() {
       _floatingTexts.add(floatingText);
 
-      int power = Storage.playerData["buffs"]["clickPower"] ?? 1;
+      int base = Storage.playerData["buffs"]["clickPower"] ?? 1;
+      double multi = _locationMultiplier();
+      int power = (base * multi).round();
       Storage.playerData["balance"] += power;
       Storage.playerData["exp"] += 1;
 
+      _updateLocation();
       Storage.savePlayerData();
     });
 
@@ -97,6 +149,14 @@ class _ClickerState extends State<Clicker>
       backgroundColor: const Color(0xFF121212),
       body: Stack(
         children: [
+          // Фоновая локация
+          Positioned.fill(
+            child: Image.asset(
+              getLocationImage(),
+              fit: BoxFit.cover,
+            ),
+          ),
+
           // top left
           Positioned(
             top: 20,
@@ -184,7 +244,8 @@ class _ClickerState extends State<Clicker>
                 child: IconButton(
                   icon: const Icon(Icons.settings, color: Colors.white),
                   onPressed: () {
-                    AudioManager.playSound('sounds/click.mp3', type: AudioType.click);
+                    AudioManager.playSound(
+                        'sounds/click.mp3', type: AudioType.click);
                     Navigator.push(
                       context,
                       PageRouteBuilder(
@@ -283,13 +344,35 @@ class _ClickerState extends State<Clicker>
                       Row(
                         children: [
                           Icon(
-                            Icons.expand,
+                            Icons.location_city,
                             color: Colors.white,
                             size: 20,
                           ),
                           const SizedBox(width: 10),
                           Text(
-                            "${Storage.playerData["exp"]} exp",
+                            "${Storage.playerData["location"]} локация",
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
+                      ),
+                      Row(
+                        children: [
+                          Icon(
+                            Icons.balance,
+                            color: Colors.white,
+                            size: 20,
+                          ),
+                          const SizedBox(width: 10),
+                          Text(
+                            "${Storage.playerData["exp"]} exp".toString()
+                                .replaceAllMapped(
+                                  RegExp(r'(\d)(?=(\d{3})+(?!\d))'),
+                                  (m) => '${m[1]} ',
+                                ),
                             style: const TextStyle(
                               color: Colors.white,
                               fontSize: 20,
@@ -307,8 +390,7 @@ class _ClickerState extends State<Clicker>
                           ),
                           const SizedBox(width: 6),
                           Text(
-                            (Storage.playerData["buffs"]["clickPower"] ?? 1).toString().replaceAllMapped(RegExp(r'(\d)(?=(\d{3})+(?!\d))'),(m) => '${m[1]}',
-                          ) + " кликов",
+                            (Storage.playerData["buffs"]["clickPower"] ?? 1).toString().replaceAllMapped(RegExp(r'(\d)(?=(\d{3})+(?!\d))'),(m) => '${m[1]}') + " кликов",
                             style: const TextStyle(
                               color: Colors.white,
                               fontSize: 18,
@@ -334,7 +416,8 @@ class _ClickerState extends State<Clicker>
                   child: GestureDetector(
                     onTap: () {
                       _addFloatingText(isUserTap: true);
-                      AudioManager.playSound('sounds/click.mp3', type: AudioType.click);
+                      AudioManager.playSound(
+                          'sounds/click.mp3', type: AudioType.click);
                     },
                     child: AnimatedOpacity(
                       duration: const Duration(milliseconds: 50),
@@ -384,7 +467,7 @@ class _ClickerState extends State<Clicker>
   }
 }
 
-// анимка (чо так много)
+// анимка (FloatingText)
 class _FloatingText extends StatefulWidget {
   final Offset offset;
   final VoidCallback onEnd;
@@ -446,10 +529,10 @@ class _FloatingTextState extends State<_FloatingText>
       child: Text(
         "+${widget.value}",
         style: TextStyle(
-          color: Color.fromARGB(255, 222, 105, 240),
+          color: const Color.fromARGB(255, 222, 105, 240),
           fontSize: 24,
           fontWeight: FontWeight.bold,
-          shadows: [
+          shadows: const [
             Shadow(color: Colors.black54, offset: Offset(1, 1), blurRadius: 2),
           ],
         ),

@@ -56,22 +56,22 @@ class _SettingsPageState extends State<SettingsPage> {
     );
 
     if (confirm == true) {
-      String un = Storage.playerData["username"];
-      IconData ic = Storage.playerData["avatar"];
+      Map<String, dynamic> playerCurrentData = Storage.playerData;
 
       Storage.playerData = {
-        "username": un,
-        "avatar": ic,
+        "username": playerCurrentData["username"],
+        "avatar": playerCurrentData["avatar"],
         "balance": 0,
+        "location": 1,
         "exp": 0,
         "buffs": {
           "clickPower": 1,
           "doubleSpeed": false,
         },
         "settings": {
-          "music": true,
-          "soundClick": true,
-          "soundBuyed": true,
+          "music": playerCurrentData["settings"]["music"],
+          "soundClick": playerCurrentData["settings"]["soundClick"],
+          "soundBuyed": playerCurrentData["settings"]["soundBuyed"],
         }
       };
       await Storage.savePlayerData();
@@ -93,7 +93,7 @@ class _SettingsPageState extends State<SettingsPage> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text("Об авторе"),
+        title: const Text("Об авторах"),
         content: const Text("Игра создана by ковалев & потапов РПО 5"),
         actions: [
           TextButton(

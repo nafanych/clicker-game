@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_application_1/audio.dart';
 import 'package:flutter_application_1/storage.dart';
-import 'clicker.dart'; // импортируем новый экран
+import 'clicker.dart';
 
 class AuthPage extends StatefulWidget {
   const AuthPage({super.key});

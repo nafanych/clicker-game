@@ -6,6 +6,7 @@ class Storage {
     "username": "",
     "avatar": Icons.flash_on,
     "balance": 0,
+    "location": 1,
     "exp": 0,
 
     "buffs": {
@@ -29,6 +30,7 @@ class Storage {
     final prefs = await SharedPreferences.getInstance();
 
     await prefs.setInt("balance", playerData["balance"]);
+    await prefs.setInt("location", playerData["location"]);
     await prefs.setInt("exp", playerData["exp"]);
 
     await prefs.setInt("clickPower", playerData["buffs"]["clickPower"]);
@@ -43,6 +45,7 @@ class Storage {
     final prefs = await SharedPreferences.getInstance();
 
     playerData["balance"] = prefs.getInt("balance") ?? 0;
+    playerData["location"] = prefs.getInt("location") ?? 0;
     playerData["exp"] = prefs.getInt("exp") ?? 0;
 
     playerData["buffs"]["clickPower"] = prefs.getInt("clickPower") ?? 1;
