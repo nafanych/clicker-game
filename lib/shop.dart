@@ -5,7 +5,9 @@ import 'package:flutter_application_1/notify.dart';
 import 'storage.dart';
 
 class ShopPage extends StatefulWidget {
-  const ShopPage({super.key});
+  final VoidCallback? onBuyDoubleSpeed;
+
+  const ShopPage({super.key, this.onBuyDoubleSpeed});
 
   @override
   State<ShopPage> createState() => _ShopPageState();
@@ -19,14 +21,20 @@ class _ShopPageState extends State<ShopPage> {
   }
 
   void buyDoubleSpeed() {
-    if (Storage.playerData["buffs"]["doubleSpeed"]) return Notify.info(context, "Улучшение уже куплено!");
-    if (Storage.playerData["balance"] < 200) return Notify.error(context, "Недостаточно средств!");
+    if (Storage.playerData["buffs"]["doubleSpeed"]) {
+      return Notify.info(context, "Улучшение уже куплено!");
+    }
+    if (Storage.playerData["balance"] < 200) {
+      return Notify.error(context, "Недостаточно средств!");
+  }
 
     setState(() {
       Storage.playerData["balance"] -= 200;
       Storage.playerData["buffs"]["doubleSpeed"] = true;
       Notify.success(context, "Улучшение куплено!");
       AudioManager.playSound('sounds/buyed.mp3', type: AudioType.buyed);
+
+      widget.onBuyDoubleSpeed?.call();
     });
 
     Storage.savePlayerData();

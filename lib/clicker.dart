@@ -20,6 +20,10 @@ class _ClickerState extends State<Clicker>
   final Random _random = Random();
   bool _isPressed = false;
 
+  void refreshAutoClicker() {
+    _startAutoClicker();
+  }
+
   void _startAutoClicker() {
     _autoClicker?.cancel();
 
@@ -290,20 +294,18 @@ class _ClickerState extends State<Clicker>
                 behavior: HitTestBehavior.opaque,
                 onTap: () {
                   AudioManager.playSound('sounds/click.mp3', type: AudioType.click);
-                  Navigator.push(
-                    context,
-                    PageRouteBuilder(
-                      transitionDuration: const Duration(milliseconds: 400),
-                      pageBuilder: (_, __, ___) => const ShopPage(),
-                      transitionsBuilder: (_, animation, __, child) {
-                        final offset = Tween(
-                          begin: const Offset(1, 0),
-                          end: Offset.zero,
-                        ).animate(animation);
-                        return SlideTransition(position: offset, child: child);
-                      },
-                    ),
-                  );
+                 Navigator.push(
+                  context,
+                  PageRouteBuilder(
+                    transitionDuration: const Duration(milliseconds: 400),
+                    pageBuilder: (_, __, ___) => ShopPage(onBuyDoubleSpeed: refreshAutoClicker),
+                    transitionsBuilder: (_, animation, __, child) {
+                      final offset = Tween<Offset>(begin: const Offset(1, 0), end: Offset.zero)
+                          .animate(animation);
+                      return SlideTransition(position: offset, child: child);
+                    },
+                  ),
+                );
                 },
                 child: Container(
                   padding: const EdgeInsets.symmetric(
