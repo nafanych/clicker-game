@@ -107,13 +107,15 @@ class _SettingsPageState extends State<SettingsPage> {
 
   @override
   Widget build(BuildContext context) {
-    return WillPopScope(
-      onWillPop: () async {
+    return PopScope(
+    canPop: true,
+    onPopInvokedWithResult: (didPop, result) {
+      if (didPop) {
         if (soundClick) {
           AudioManager.playSound('sounds/click.mp3', type: AudioType.click);
         }
-        return true;
-      },
+      }
+    },
       child: Scaffold(
         backgroundColor: const Color(0xFF121212),
         appBar: AppBar(

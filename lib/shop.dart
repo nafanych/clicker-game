@@ -1,4 +1,7 @@
 
+import 'dart:async';
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_application_1/audio.dart';
 import 'package:flutter_application_1/notify.dart';
@@ -14,6 +17,22 @@ class ShopPage extends StatefulWidget {
 }
 
 class _ShopPageState extends State<ShopPage> {
+
+  Timer? _refreshTimer;
+
+  @override
+  void initState() {
+    super.initState();
+    _refreshTimer = Timer.periodic(const Duration(milliseconds: 500), (timer) {
+      if (mounted) setState(() {}); 
+    });
+  }
+
+  @override
+  void dispose() {
+    _refreshTimer?.cancel();
+    super.dispose();
+  }
 
   int getClickPrice() {
     int clickPower = (Storage.playerData["buffs"]["clickPower"] ?? 1) as int;
@@ -41,7 +60,7 @@ class _ShopPageState extends State<ShopPage> {
   }
 
   void buyClickPower() {
-    if (Storage.playerData["buffs"]["clickPower"] >= 50) return Notify.info(context, "Улучшение прокачано на максимум!");;
+    if (Storage.playerData["buffs"]["clickPower"] >= 50) return Notify.info(context, "Улучшение прокачано на максимум!");
 
     int price = getClickPrice();
 
@@ -51,6 +70,7 @@ class _ShopPageState extends State<ShopPage> {
       Storage.playerData["balance"] -= price;
       Storage.playerData["buffs"]["clickPower"] += 1;
       Notify.success(context, "Улучшение куплено!");
+
       AudioManager.playSound('sounds/buyed.mp3', type: AudioType.buyed);
     });
 
@@ -64,6 +84,22 @@ class _ShopPageState extends State<ShopPage> {
       Storage.playerData["balance"] -= 100;
       Storage.playerData["exp"] += 50;
       Notify.success(context, "Улучшение куплено!");
+
+      AudioManager.playSound('sounds/buyed.mp3', type: AudioType.buyed);
+    });
+
+    Storage.savePlayerData();
+  }
+
+  void buyRandomExp() {
+    if (Storage.playerData["balance"] < 50) return Notify.error(context, "Недостаточно средств!");
+    
+    int reward = Random().nextInt(500);
+    setState(() {
+      Storage.playerData["balance"] -= 50;
+      Storage.playerData["exp"] += reward;
+      Notify.success(context, "Вы выбили $reward опыта!");
+
       AudioManager.playSound('sounds/buyed.mp3', type: AudioType.buyed);
     });
 
@@ -77,7 +113,7 @@ class _ShopPageState extends State<ShopPage> {
       decoration: BoxDecoration(
         color: const Color(0xFF1E1E1E),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.white.withOpacity(0.1)),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
       ),
       child: Row(
         children: [
@@ -113,6 +149,34 @@ class _ShopPageState extends State<ShopPage> {
       appBar: AppBar(
         backgroundColor: const Color.fromARGB(255, 37, 37, 37),
         title: const Text("Магазин"),
+        actions: [
+          Padding(
+            padding: const EdgeInsets.only(right: 16),
+            child: Row(
+              children: [
+                const Icon(
+                  Icons.monetization_on,
+                  color: Colors.amber,
+                  size: 20,
+                ),
+                const SizedBox(width: 6),
+                Text(
+                  Storage.playerData["balance"]
+                    .toString()
+                    .replaceAllMapped(
+                    RegExp(r'(\d)(?=(\d{3})+(?!\d))'),
+                    (m) => '${m[1]} ',
+                  ),
+                  style: const TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    // color: Colors.amber,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
       body: Padding(
         padding: const EdgeInsets.all(16),
@@ -140,6 +204,12 @@ class _ShopPageState extends State<ShopPage> {
               buyExp,
             ),
 
+            shopButton(
+              "Испытать удачу",
+              "Случайный опыт (от 0 до 500)",
+              50,
+              buyRandomExp,
+            ),
           ],
         ),
       ),

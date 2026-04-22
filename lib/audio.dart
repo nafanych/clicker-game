@@ -5,6 +5,8 @@ enum AudioType { click, buyed }
 
 class AudioManager {
   static AudioPlayer? _bgMusicPlayer;
+  
+  static final Map<String, AudioPool> _pools = {};
 
   static Future<void> playSound(String assetPath, {AudioType type = AudioType.click}) async {
     bool isEnabled = false;
@@ -19,12 +21,14 @@ class AudioManager {
 
     if (!isEnabled) return;
 
-    final player = AudioPlayer();
-    await player.setReleaseMode(ReleaseMode.stop);
-    await player.play(AssetSource(assetPath));
-    player.onPlayerComplete.listen((_) {
-      player.dispose();
-    });
+    if (!_pools.containsKey(assetPath)) {
+      _pools[assetPath] = await AudioPool.createFromAsset(
+        path: assetPath,
+        maxPlayers: 5,
+      );
+    }
+
+    await _pools[assetPath]!.start();
   }
 
   static Future<void> playBackgroundMusic(String assetPath) async {
@@ -41,7 +45,7 @@ class AudioManager {
 
   static Future<void> stopBackgroundMusic() async {
     await _bgMusicPlayer?.stop();
-    _bgMusicPlayer?.dispose();
+    await _bgMusicPlayer?.dispose();
     _bgMusicPlayer = null;
   }
 }

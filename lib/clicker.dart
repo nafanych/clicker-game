@@ -19,6 +19,7 @@ class _ClickerState extends State<Clicker>
   Timer? _autoClicker;
   final Random _random = Random();
   bool _isPressed = false;
+  bool _isAppActive = true;
 
   void refreshAutoClicker() {
     _startAutoClicker();
@@ -33,46 +34,33 @@ class _ClickerState extends State<Clicker>
         : baseSpeed;
 
     _autoClicker = Timer.periodic(Duration(milliseconds: interval), (_) {
-      _addFloatingText();
+      if (_isAppActive) {
+        _addFloatingText();
+      }
     });
   }
 
   int getCurrentStep() {
     int exp = Storage.playerData["exp"];
-    return ((exp % 1000) ~/ 250);
+    return ((exp % 4000) ~/ 1000);
   }
 
   void _updateLocation() {
     int exp = Storage.playerData["exp"];
 
-    if (exp >= 3000) {
-      String un = Storage.playerData["username"];
-      IconData ic = Storage.playerData["avatar"];
-
-      Storage.playerData = {
-        "username": un,
-        "avatar": ic,
-        "balance": 0,
-        "location": 1,
-        "exp": 0,
-        "buffs": {
-          "clickPower": 1,
-          "doubleSpeed": false,
-        },
-        "settings": {
-          "music": true,
-          "soundClick": true,
-          "soundBuyed": true,
-        }
-      };
-    } else if (exp >= 2000) {
-      Storage.playerData["location"] = 3;
-    } else if (exp >= 1000) {
-      Storage.playerData["location"] = 2;
+    if (exp >= 12000) {
+      _resetProgressToNextLevel();
     } else {
-      Storage.playerData["location"] = 1;
+      Storage.playerData["location"] = (exp ~/ 4000) + 1;
     }
+    Storage.savePlayerData();
+  }
 
+  void _resetProgressToNextLevel() {
+    Storage.playerData["exp"] = 0;
+    Storage.playerData["location"] = 1;
+    Storage.playerData["balance"] = 0;
+    Storage.playerData["buffs"]["doubleSpeed"] = false;
     Storage.savePlayerData();
   }
 
@@ -82,15 +70,17 @@ class _ClickerState extends State<Clicker>
   }
 
   String getLocationImage() {
-    int location = Storage.playerData["location"];
+    int loc = Storage.playerData["location"];
+    if (loc < 1) loc = 1;
     int step = getCurrentStep();
-    return 'assets/images/locations/loc${location}step$step.png';
+    return 'assets/images/locations/loc${loc}step$step.png';
   }
 
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
+    _isAppActive = true;
     _startAutoClicker();
   }
 
@@ -104,13 +94,20 @@ class _ClickerState extends State<Clicker>
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (state == AppLifecycleState.paused ||
-        state == AppLifecycleState.detached) {
-      Storage.savePlayerData();
+    if (state == AppLifecycleState.paused || state == AppLifecycleState.inactive) {
+      _isAppActive = false;
+      _autoClicker?.cancel();
+      setState(() {
+        _floatingTexts.clear();
+      });
+    } else if (state == AppLifecycleState.resumed) {
+      _isAppActive = true;
+      _startAutoClicker();
     }
   }
 
   void _addFloatingText({bool isUserTap = false}) {
+    if (!_isAppActive && !isUserTap) return;
     final dx = (_random.nextDouble() * 200 - 100);
     final dy = (_random.nextDouble() * 100 - 10);
     final key = UniqueKey();
@@ -191,7 +188,7 @@ class _ClickerState extends State<Clicker>
                     color: const Color(0xFF1E1E1E),
                     borderRadius: BorderRadius.circular(12),
                     border: Border.all(
-                      color: Colors.white.withOpacity(0.1),
+                      color: Colors.white.withValues(alpha: 0.1),
                       width: 1,
                     ),
                   ),
@@ -257,7 +254,7 @@ class _ClickerState extends State<Clicker>
                 decoration: BoxDecoration(
                   color: const Color(0xFF1E1E1E),
                   borderRadius: BorderRadius.circular(10),
-                  border: Border.all(color: Colors.white.withOpacity(0.1)),
+                  border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
                 ),
                 child: IconButton(
                   icon: const Icon(Icons.settings, color: Colors.white),
@@ -268,14 +265,14 @@ class _ClickerState extends State<Clicker>
                       context,
                       PageRouteBuilder(
                         transitionDuration: const Duration(milliseconds: 400),
-                        pageBuilder: (_, __, ___) => const SettingsPage(),
-                        transitionsBuilder: (_, animation, __, child) {
+                        pageBuilder: (context, animation, _) => const SettingsPage(),
+                        transitionsBuilder: (context, animation, _, child) {
                           final offset = Tween<Offset>(
                             begin: const Offset(-1, 0),
                             end: Offset.zero,
                           ).animate(animation);
                           return SlideTransition(position: offset, child: child);
-                        },
+                        }
                       ),
                     );
                   },
@@ -297,14 +294,17 @@ class _ClickerState extends State<Clicker>
                  Navigator.push(
                   context,
                   PageRouteBuilder(
-                    transitionDuration: const Duration(milliseconds: 400),
-                    pageBuilder: (_, __, ___) => ShopPage(onBuyDoubleSpeed: refreshAutoClicker),
-                    transitionsBuilder: (_, animation, __, child) {
-                      final offset = Tween<Offset>(begin: const Offset(1, 0), end: Offset.zero)
-                          .animate(animation);
-                      return SlideTransition(position: offset, child: child);
-                    },
-                  ),
+                  transitionDuration: const Duration(milliseconds: 400),
+                  pageBuilder: (context, animation, secondaryAnimation) => ShopPage(onBuyDoubleSpeed: refreshAutoClicker),
+                  transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                    final offset = Tween<Offset>(
+                      begin: const Offset(1, 0),
+                      end: Offset.zero,
+                    ).animate(animation);
+                    
+                    return SlideTransition(position: offset, child: child);
+                  },
+                ),
                 );
                 },
                 child: Container(
@@ -315,7 +315,7 @@ class _ClickerState extends State<Clicker>
                   decoration: BoxDecoration(
                     color: const Color(0xFF1E1E1E),
                     borderRadius: BorderRadius.circular(10),
-                    border: Border.all(color: Colors.white.withOpacity(0.1)),
+                    border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
                   ),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
@@ -349,7 +349,7 @@ class _ClickerState extends State<Clicker>
                     color: const Color(0xFF1E1E1E),
                     borderRadius: BorderRadius.circular(12),
                     border: Border.all(
-                      color: Colors.white.withOpacity(0.1),
+                      color: Colors.white.withValues(alpha: 0.1),
                       width: 1,
                     ),
                   ),
@@ -406,7 +406,7 @@ class _ClickerState extends State<Clicker>
                           ),
                           const SizedBox(width: 6),
                           Text(
-                            (Storage.playerData["buffs"]["clickPower"] ?? 1).toString().replaceAllMapped(RegExp(r'(\d)(?=(\d{3})+(?!\d))'),(m) => '${m[1]}') + " кликов",
+                            "${(Storage.playerData["buffs"]["clickPower"] ?? 1).toString().replaceAllMapped(RegExp(r'(\d)(?=(\d{3})+(?!\d))'), (m) => '${m[1]}')} кликов",
                             style: const TextStyle(
                               color: Colors.white,
                               fontSize: 18,

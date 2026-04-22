@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_application_1/storage.dart';
 import 'package:flutter_application_1/audio.dart';
+// import 'package:shared_preferences/shared_preferences.dart';
 import 'auth.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  // final prefs = await SharedPreferences.getInstance();
+  // await prefs.clear();
   await Storage.loadPlayerData();
 
   AudioManager.playBackgroundMusic('sounds/music.mp3');
