@@ -1,16 +1,19 @@
-# flutter_application_1
 
-A new Flutter project.
+## Clicked Game - мой публичный проект который был создан для зачета в колледже
 
-## Getting Started
+# ⭐️ Обширный функционал:
 
-This project is a starting point for a Flutter application.
+Создайте свой профиль, выбрав аватарку и логин;
+Система локаций и обновлениеих в зависимости от уровня;
+Автокликер с возможностью прокачать его;
+Магазин - имеет 4 функции, которые позволят игроку быстрее пройти игру;
+Настройки - управляйте музыкой, звуками и аккаунтом;
 
-A few resources to get you started if this is your first Flutter project:
+## 📦 Установка
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+Откройте Vs Code или другой редактор;
+В консоли напишите : `git clone https://github.com/nafanych/clicker-game.git`;
+После успешной загрузки пропишите в консоль : `cd clicked-game`;
+Установите зависимости (так-же напишите в консоль) : `flutter pub get`;
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+И запустите проект! : `flutter run`
